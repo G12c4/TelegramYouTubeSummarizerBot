@@ -67,10 +67,10 @@ python main.py
 ## 7. Now, set these variables in the config.py file
 
 ### Youtube
-YOUTUBE_API_SERVICE_NAME = 'youtube'
-YOUTUBE_API_VERSION = 'v3'
-YOUTUBE_API_KEY = 'XXXX' # replace with your actual YouTube API key
-CHANNEL_IDS = ['xxx', 'xxx', 'xxx'] # replace with actual YouTube channel IDs
+YOUTUBE_API_SERVICE_NAME = 'youtube' <br>
+YOUTUBE_API_VERSION = 'v3' <br>
+YOUTUBE_API_KEY = 'XXXX' # replace with your actual YouTube API key <br>
+CHANNEL_IDS = ['xxx', 'xxx', 'xxx'] # replace with actual YouTube channel IDs <br>
 
 ### Telegram
 BOT_TOKEN = '000000000:AABBCCDDEEFFGGHHIIJJKKMMLLOOPPRRSS' # replace with your actual Telegram bot token
