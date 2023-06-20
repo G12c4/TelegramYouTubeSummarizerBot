@@ -73,13 +73,13 @@ YOUTUBE_API_KEY = 'XXXX' # replace with your actual YouTube API key <br>
 CHANNEL_IDS = ['xxx', 'xxx', 'xxx'] # replace with actual YouTube channel IDs <br>
 
 ### Telegram
-BOT_TOKEN = '000000000:AABBCCDDEEFFGGHHIIJJKKMMLLOOPPRRSS' # replace with your actual Telegram bot token
-TELEGRAM_CHANNEL_ID = -123456789 # replace with your actual Telegram channel ID
+BOT_TOKEN = '000000000:AABBCCDDEEFFGGHHIIJJKKMMLLOOPPRRSS' # replace with your actual Telegram bot token <br>
+TELEGRAM_CHANNEL_ID = -123456789 # replace with your actual Telegram channel ID <br>
 
 ### OpenAI
-OPENAI_API_KEY = 'sk-xxx' # replace with your actual OpenAI API key
-PRIMARY_MODEL = 'gpt-3.5-turbo-16k' # replace with your preferred OpenAI model
-SECONDARY_MODEL = 'gpt-3.5-turbo' # replace with your preferred OpenAI model
+OPENAI_API_KEY = 'sk-xxx' # replace with your actual OpenAI API key <br>
+PRIMARY_MODEL = 'gpt-3.5-turbo-16k' # replace with your preferred OpenAI model <br>
+SECONDARY_MODEL = 'gpt-3.5-turbo' # replace with your preferred OpenAI model <br>
 
 ### Store file
 STORE_FILE = 'video_store.txt'
