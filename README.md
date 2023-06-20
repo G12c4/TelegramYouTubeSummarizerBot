@@ -66,20 +66,20 @@ python main.py
 
 ## 7. Now, set these variables in the config.py file
 
-# Youtube
+### Youtube
 YOUTUBE_API_SERVICE_NAME = 'youtube'
 YOUTUBE_API_VERSION = 'v3'
 YOUTUBE_API_KEY = 'XXXX' # replace with your actual YouTube API key
 CHANNEL_IDS = ['xxx', 'xxx', 'xxx'] # replace with actual YouTube channel IDs
 
-# Telegram
+### Telegram
 BOT_TOKEN = '000000000:AABBCCDDEEFFGGHHIIJJKKMMLLOOPPRRSS' # replace with your actual Telegram bot token
 TELEGRAM_CHANNEL_ID = -123456789 # replace with your actual Telegram channel ID
 
-# OpenAI
+### OpenAI
 OPENAI_API_KEY = 'sk-xxx' # replace with your actual OpenAI API key
 PRIMARY_MODEL = 'gpt-3.5-turbo-16k' # replace with your preferred OpenAI model
 SECONDARY_MODEL = 'gpt-3.5-turbo' # replace with your preferred OpenAI model
 
-# Store file
+### Store file
 STORE_FILE = 'video_store.txt'
