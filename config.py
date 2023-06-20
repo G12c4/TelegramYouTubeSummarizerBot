@@ -1,0 +1,17 @@
+# Youtube
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = 'v3'
+YOUTUBE_API_KEY = 'XXXX'
+CHANNEL_IDS = ['xxx', 'xxx', 'xxx']
+
+# Telegram
+BOT_TOKEN = '000000000:AABBCCDDEEFFGGHHIIJJKKMMLLOOPPRRSS'
+TELEGRAM_CHANNEL_ID = -123456789
+
+# OpenAI
+OPENAI_API_KEY = 'sk-xxx'
+PRIMARY_MODEL = 'gpt-3.5-turbo-16k'
+SECONDARY_MODEL = 'gpt-3.5-turbo'
+
+# Store file
+STORE_FILE = 'video_store.txt'
