@@ -3,6 +3,7 @@ import openai
 import config
 import logging
 import telebot
+import vertexai
 from rich import print
 from typing import List, Dict
 from rich.logging import RichHandler
@@ -10,6 +11,7 @@ from dataclasses import dataclass, field
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from youtube_transcript_api import YouTubeTranscriptApi
+from vertexai.language_models import TextGenerationModel
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -41,7 +43,7 @@ class Bot:
         self.openai.api_key = config.OPENAI_API_KEY
         self.bot = telebot.TeleBot(config.BOT_TOKEN)
 
-    def _get_stored_videos(self) -> List[str]:
+    def get_stored_videos(self) -> List[str]:
         """
         Retrieve stored video IDs from file
         """
@@ -52,20 +54,20 @@ class Bot:
         else:
             return []
 
-    def _store_video(self, video_id: str) -> None:
+    def store_video(self, video_id: str) -> None:
         """
         Store video id to file
         """
         with open(config.STORE_FILE, 'a') as f:
             f.write('\n' + video_id)
 
-    def _get_latest_videos(self) -> List[VideoInfo]:
+    def get_latest_videos(self) -> List[VideoInfo]:
         """
         Get latest videos from specific channels
         """
         try:
             search_response = []
-            for channel_id in config.CHANNEL_IDS:
+            for channel_id in config.CHANNEL_IDS_FILTER:
                 search_response.append(self.youtube.search().list(
                     channelId=channel_id,
                     part='id,snippet',
@@ -78,7 +80,7 @@ class Bot:
             for response in search_response:
                 for item in response.get('items'):
                     video_id = item['id']['videoId']
-                    filtered_video = self._filter_old_videos(new_video=video_id)
+                    filtered_video = self.filter_old_videos(new_video=video_id)
                     if filtered_video is True:
                         video = VideoInfo(
                         id = item['id']['videoId'],
@@ -86,7 +88,7 @@ class Bot:
                         title = item['snippet']['title'],
                         url = f'https://www.youtube.com/watch?v={item["id"]["videoId"]}')
                         videos.append(video)
-                        self._store_video(video_id=video_id)
+                        self.store_video(video_id=video_id)
             if not videos:
                 log.info("No new Videos!")
             return videos
@@ -94,14 +96,14 @@ class Bot:
             log.info(f'An HTTP error {e.resp.status} occurred: {e.content}')
             return []
 
-    def _filter_old_videos(self, new_video):
-        stored_videos = self._get_stored_videos()
+    def filter_old_videos(self, new_video):
+        stored_videos = self.get_stored_videos()
         # Filter out videos that have been already processed
         if new_video not in stored_videos:
             return True
         return False
     
-    def _get_transcript(self, videos: List[VideoInfo]) -> None:
+    def get_transcript(self, videos: List[VideoInfo]) -> None:
         for script in videos:
             transcript_list = YouTubeTranscriptApi.list_transcripts(script.id)
             result = [transcript.translate('en').fetch()[0]["text"]
@@ -109,26 +111,47 @@ class Bot:
             script.transcript = (''.join(result))
         return videos
 
-    def _generate_key_takeaways(self, videos: List[VideoInfo]) -> None:
+    def generate_key_takeaways_openai(self, videos: List[VideoInfo]) -> None:
         for script in videos:
             completion = openai.ChatCompletion.create(
-            model=config.PRIMARY_MODEL,
+            model="gpt-3.5-turbo-16k",
             messages=[
                 {"role": "system", "content": "Extract key takeaways of the next chunk of the transcript. Each key takeaway should be a list item, of the following format:\n'- [takeaway]'\n. Do not use numbered lists and do not render brackets."},
                 {"role": "user", "content": script.transcript}
             ])
             response1 = completion.get('choices', [{}])[0].get('message', {}).get('content', '')
             
+            # script.summary = self._translate_vertex(transcript=response1)
+            
             completion2 = openai.ChatCompletion.create(
-            model=config.SECONDARY_MODEL,
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Translate the following to Croatian."},
                 {"role": "user", "content": response1}
             ])
-            script.summary = completion2.get('choices', [{}])[0].get('message', {}).get('content', '')
+            if len(completion2.get('choices', [{}])[0].get('message', {}).get('content', '')) > 500:
+                script.summary = completion2.get('choices', [{}])[0].get('message', {}).get('content', '')
         return videos
 
-    def _send_to_telegram(self, takeaways: Dict[VideoInfo, str]) -> None:
+    def _translate_vertex(self, transcript) -> None:
+        vertexai.init(project="<google-cloud-vertex-id>", location="us-central1")
+        parameters = {
+            "temperature": 0.0,
+            "max_output_tokens": 2048,
+            "top_p": 0.8,
+            "top_k": 40
+        }
+        model = TextGenerationModel.from_pretrained("text-bison@001")
+        response = model.predict(
+            f"""
+            Translate the following text to croatian:
+            {transcript}
+            """,
+            **parameters
+        )
+        return response.text
+
+    def send_to_telegram(self, takeaways: Dict[VideoInfo, str]) -> None:
         """
         Send key takeaways to a Telegram channel
         """
@@ -144,16 +167,21 @@ class Bot:
         Main processing method
         """
         try:
-            videos = self._get_latest_videos()
-            scripts = self._get_transcript(videos=videos)
-            takeaways = self._generate_key_takeaways(videos=scripts)
-            self._send_to_telegram(takeaways=takeaways)
+            videos = self.get_latest_videos()
+            scripts = self.get_transcript(videos=videos)
+            takeaways = self.generate_key_takeaways_openai(videos=scripts)
+            self.send_to_telegram(takeaways=takeaways)
         except Exception as e:
             log.info(f"An error occurred: {e}")
 
 def main():
     bot = Bot()
     bot.process_new_videos()
+    # for testing
+    # videos = bot.get_latest_videos()
+    # scripts = bot.get_transcript(videos=videos)
+    # takeaways = bot.generate_key_takeaways(videos=scripts)
+    # bot.send_to_telegram(takeaways=takeaways)
     
 if __name__ == '__main__':
     main()
